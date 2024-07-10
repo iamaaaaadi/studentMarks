@@ -10,7 +10,7 @@ import jakarta.persistence.Id;
 public class StudentMarks implements Serializable {
  
 	/**
-	 * 
+	 *  
 	 */
 	private static final long serialVersionUID = 8648125412892483351L;
 	

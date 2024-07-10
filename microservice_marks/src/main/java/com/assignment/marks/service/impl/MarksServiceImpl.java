@@ -8,6 +8,7 @@ import java.io.Reader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.assignment.marks.dao.MarksRepository;
 import com.assignment.marks.entity.StudentMarks;
+import com.assignment.marks.request.MarksCsvDto;
 import com.assignment.marks.service.MarksService;
 import com.opencsv.bean.CsvToBeanBuilder;
 import com.opencsv.bean.HeaderColumnNameTranslateMappingStrategy;
@@ -29,26 +31,36 @@ public class MarksServiceImpl implements MarksService {
 		this.marksRepository = marksRepository;
 	}
 
+	//To save Student Marks into the DB. 
 	
 	@Override
 	public String saveStudentMarks(MultipartFile file) throws FileNotFoundException, IOException {
-		
-		Reader reader = new BufferedReader(new InputStreamReader(file.getInputStream()));
-		HeaderColumnNameTranslateMappingStrategy<StudentMarks> strategy = new HeaderColumnNameTranslateMappingStrategy<>();
 
-		strategy.setType(StudentMarks.class);
+		Reader reader = new BufferedReader(new InputStreamReader(file.getInputStream()));
+		HeaderColumnNameTranslateMappingStrategy<MarksCsvDto> strategy = new HeaderColumnNameTranslateMappingStrategy<>();
+		strategy.setType(MarksCsvDto.class);
+		
+		//Mapping the data
 		Map<String, String> mapping = new HashMap<>();
 		mapping.put("id", "id");
 		mapping.put("marks", "marks");
-	
 		strategy.setColumnMapping(mapping);
 
-		List<StudentMarks> students = new CsvToBeanBuilder<StudentMarks>(reader).withType(StudentMarks.class)
+		List<MarksCsvDto> marksCsvDtos = new CsvToBeanBuilder<MarksCsvDto>(reader).withType(MarksCsvDto.class)
 				.withMappingStrategy(strategy).withIgnoreLeadingWhiteSpace(true).build().parse();
+       
+		//Creating list of students marks to save into DB. 
+		List<StudentMarks> studentMarks = marksCsvDtos.stream().map(dto -> {
+			StudentMarks studentMark = new StudentMarks();
+			studentMark.setId(Long.parseLong(dto.getId()));
+			studentMark.setMarks(Long.parseLong(dto.getMarks()));
 
-		marksRepository.saveAll(students);
+			return studentMark;
+		}).collect(Collectors.toList());
+
+		marksRepository.saveAll(studentMarks);
 		return "Students Marks Uploaded Successfully";
-	}
 
+	}
 
 }

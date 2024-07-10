@@ -1,15 +1,22 @@
-package com.assignment.marks.request;
+ package com.assignment.marks.request;
 
 public class StudentDto {
-    private Long id;
+    private String id;
+    private String marks; 
     private String name;
     private String address;
     private String phoneNumber;
     private String department;
-	public Long getId() {
+	public String getMarks() {
+		return marks;
+	}
+	public void setMarks(String marks) {
+		this.marks = marks;
+	}
+	public String getId() {
 		return id;
 	}
-	public void setId(Long id) {
+	public void setId(String id) {
 		this.id = id;
 	}
 	public String getName() {
